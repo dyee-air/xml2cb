@@ -25,22 +25,28 @@ class XmlCodebook(object):
             'DataFormat': ['formatname', 'formatvalue']
         }
         self._tables = {
-            'DataFields': self.buildTable(
+            'DataFields': self._buildTable(
                 self._root.find('DataFields'), include_children=False
             ),
-            'DataCounts': self.buildTable(
+            'DataCounts': self._buildTable(
                 self._root.find('DataFields'), element_tag='DataCount'
             ),
-            'DataFormats': self.buildTable(
+            'DataFormats': self._buildTable(
                 self._root.find('DataFormats')
             )
         }
+        self.DataFields['fieldnum'] = self.DataFields.index + 1
+        self._data = self._buildData()
+
+    @property
+    def data(self):
+        return self._data
 
     @property
     def tables(self):
         return self._tables
 
-    def buildTable(self, element_root, element_tag=None, include_children=True):
+    def _buildTable(self, element_root, element_tag=None, include_children=True):
         name = element_tag or element_root[0].tag
         element_list = element_root.findall(name)
 
@@ -57,6 +63,16 @@ class XmlCodebook(object):
                     for row in elem.getRows(key_cols + data_cols)
                     if any(row[field] for field in data_cols)]
         return pd.DataFrame(convertRows(row_list))
+
+    def _buildData(self):
+        df0 = pd.merge(self.DataFields, self.DataCounts,
+                       how='left', on='fieldname')
+        return pd.merge(df0, self.DataFormats, how='left', left_on=['formatname', 'datavalue'], right_on=['formatname', 'formatvalue'])
+
+    def getData(self, column_names, distinct=True):
+        if distinct:
+            return self._data[column_names].drop_duplicates()
+        return self._data[column_names]
 
     def __getattr__(self, attr_name):
         try:

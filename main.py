@@ -1,12 +1,9 @@
 import sys
-import os
 from argparse import ArgumentParser
 from xml.etree import ElementTree
 from core import XmlCodebook
 from exp import exportData
-
-# if not os.getcwd() in sys.path:
-#     sys.path.insert(0, os.getcwd())
+from qry import queryCodebook
 
 PARSER = ArgumentParser()
 PARSER.add_argument('infile')
@@ -27,7 +24,7 @@ def main():
     codebook = XmlCodebook(xml_tree.getroot())
 
     exportData(
-        'csv', codebook.DataFields[['fieldname', 'mean', 'nummiss']], outfile=OUTFILE_PATH)
+        'csv', queryCodebook(codebook, 'continuous'), outfile=OUTFILE_PATH)
 
 
 main()

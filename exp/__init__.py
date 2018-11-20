@@ -1,15 +1,21 @@
+import warnings
 from .nullexporter import NullExporter
 from .csvexporter import CsvExporter
 
 EXPORTERS = {
-    'csv': CsvExporter,
-    'null': NullExporter
+    'csv': CsvExporter
 }
 
-EXPORTERS.setdefault('null')
 
+def exportData(format_name, data, outfile=None, header=True):
+    export_cls = NullExporter
 
-def exportData(mode, data, outfile=None, noheader=False, custom_header=None):
-    exporter = EXPORTERS[mode](data=data, outfile=outfile, noheader=noheader)
-    exporter.header = custom_header or exporter.header
+    if format_name:
+        try:
+            export_cls = EXPORTERS[format_name.lower()]
+        except KeyError:
+            warnings.warn(
+                "Format '{}' not found.  Printing output to stdout.".format(format_name))
+
+    exporter = export_cls(data=data, outfile=outfile, header=header)
     exporter.export()
