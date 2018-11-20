@@ -24,7 +24,7 @@ def main():
     codebook = XmlCodebook(xml_tree.getroot())
 
     exportData(
-        'csv', queryCodebook(codebook, 'continuous'), outfile=OUTFILE_PATH)
+        'csv', queryCodebook(codebook, 'totals'), outfile=OUTFILE_PATH)
 
 
 main()
